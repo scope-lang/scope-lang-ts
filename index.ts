@@ -82,9 +82,11 @@ class ScopeBlock implements ScopeValue, ScopeExec {
   expressions: Array<ScopeExpression>;
   eval(this: ScopeBlock, parameters: ScopeExpression[], context: ScopePropertyHolder): ScopeValue {
     //console.log(...parameters.map(x=>x.eval(context).toString()));
+    var subCtx=new ScopeScope(this.context);
+    this.parameterMap.apply(parameters,subCtx);
     var value: ScopeValue = new ScopeUndefined();
     for (var statement of this.expressions) {
-      statement.eval(this.context);
+      statement.eval(subCtx);
     }
     return value;
     //return new ScopeUndefined();
@@ -141,7 +143,7 @@ class ScopeReferenceMap {
   }
   apply(this: ScopeReferenceMap, parameters: Array<ScopeValue>, context: ScopePropertyHolder) {
     for (var i = 0; i < Math.min(parameters.length, this.keys.length); i++) {
-      context.set(this.keys[i], parameters[i]);
+      context[this.keys[i]]=parameters[i];
     }
   }
 }
