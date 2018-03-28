@@ -1,3 +1,4 @@
+import * as PEG from "pegjs";
 interface ScopePropertyHolder extends ScopeValue {
   properties:{ [key:string]: ScopeValue };
   get(this: ScopePropertyHolder, key: string): ScopeValue;

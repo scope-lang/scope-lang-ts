@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.ts",
   "dependencies": {
+    "pegjs": "^0.10.0",
     "ts-node": "^5.0.1",
     "typescript": "^2.8.1"
   },
