@@ -1,0 +1,16 @@
+{
+  "name": "scope-lang-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "dependencies": {},
+  "devDependencies": {
+    "ts-node": "^5.0.1",
+    "typescript": "^2.8.1"
+  },
+  "scripts": {
+    "main": "ts-node index.ts"
+  },
+  "author": "Cole Kissane <coler706@gmail.com>",
+  "license": "MIT"
+}
