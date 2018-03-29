@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.ts",
   "dependencies": {
+    "@types/npm": "^2.0.29",
     "pegjs": "^0.10.0",
     "ts-node": "^5.0.1",
     "typescript": "^2.8.1"
@@ -14,7 +15,8 @@
   },
   "scripts": {
     "main": "ts-node index.ts",
-    "make-parser":"pegjs --plugin ./node_modules/ts-pegjs/src/tspegjs -o scope-peg.ts --cache scope.pegjs"
+    "make-parser": "pegjs --plugin ./node_modules/ts-pegjs/src/tspegjs -o scope-peg.ts --cache scope.pegjs",
+    "test": "ts-node index.ts test.scp"
   },
   "author": "Cole Kissane <coler706@gmail.com>",
   "license": "MIT"

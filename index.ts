@@ -1,9 +1,11 @@
 import { SyntaxError, parse } from './scope-peg';
 import * as Scope from './types';
+import * as fs from "fs";
+import * as path from "path";
 
 function run(program: Scope.ScopeBody) {
   var global = new Scope.ScopeScope();
-  global.set("print",new Scope.ScopeNativePrint());
+  global.set("print", new Scope.ScopeNativePrint());
   return program.eval(global).eval([], global);
 }
 function test() {
@@ -30,7 +32,7 @@ function parseToProg(p) {
   if (p.type == "CallExpression") {
 
 
-    return new Scope.ScopeCall(parseToProg(p.callee),p.arguments.map(x=>parseToProg(x)));
+    return new Scope.ScopeCall(parseToProg(p.callee), p.arguments.map(x => parseToProg(x)));
   }
   if (p.type == "Identifier") {
 
@@ -44,39 +46,65 @@ function parseToProg(p) {
   }
   if (p.type == "ForStatement") {
 
-    return new Scope.ScopeForStatement(parseToProg(p.init),parseToProg(p.test),parseToProg(p.update),parseToProg(p.body));
+    return new Scope.ScopeForStatement(parseToProg(p.init), parseToProg(p.test), parseToProg(p.update), parseToProg(p.body));
   }
   if (p.type == "VariableDeclaration") {
 
-    return new Scope.ScopeVariableDeclaration(p.declarations.map(x=>parseToProg(x)));
+    return new Scope.ScopeVariableDeclaration(p.declarations.map(x => parseToProg(x)));
   }
   if (p.type == "VariableDeclarator") {
 
-    return new Scope.ScopeVariableDeclarator(parseToProg(p.id),parseToProg(p.init));
+    return new Scope.ScopeVariableDeclarator(parseToProg(p.id), parseToProg(p.init));
   }
   if (p.type == "BinaryExpression") {
 
-    return new Scope.ScopeBinaryExpression(parseToProg(p.left),parseToProg(p.right),p.operator);
+    return new Scope.ScopeBinaryExpression(parseToProg(p.left), parseToProg(p.right), p.operator);
   }
   if (p.type == "AssignmentExpression") {
 
-    return new Scope.ScopeVariableDeclarator(parseToProg(p.left),parseToProg(p.right));
+    return new Scope.ScopeVariableDeclarator(parseToProg(p.left), parseToProg(p.right));
   }
-  return new Scope.ScopeUndefined();
-}
-try {
-  const sampleOutput = parse('for(var i=0;i<10;i=i+1){var row="";for(var j=0;j<i+1;j=j+1){row=row+"*";};print("hello "+i,row);};', {});
-  console.log("parsed", JSON.stringify(sampleOutput))
-  var pp = parseToProg(sampleOutput);
-  console.log("parsed p", JSON.stringify(pp))
-  if (pp instanceof Scope.ScopeBody) {
-    console.log("RUN");
-    console.log(run(pp));
+  if (p.type == "UpdateExpression") {
+
+    return new Scope.ScopeUpdateExpression(parseToProg(p.argument), p.operator,p.prefix);
   }
+  if (p.type == "UndefinedLiteral") {
+
+    return new Scope.ScopeUndefined();
+  }
+  throw ("No Map Yet For"+p);
+  //return new Scope.ScopeUndefined();
 }
-catch (ex) {
-  console.log("error parsing", ex)
-  // Handle parsing error
-  // [...]
+
+if (process.argv.length > 2) {
+  try {
+    fs.readFile(path.join(__dirname, process.argv[2]), function(err, contents) {
+      if (err) {
+                return console.error(err);
+            }
+      try {
+        const sampleOutput = parse(contents.toString(), {});
+
+        //const sampleOutput = parse('for(var i=0;i<10;i=i+1){var row="";for(var j=0;j<i+1;j=j+1){row=row+"*";};print("hello "+i,row);};', {});
+        console.log("parsed", JSON.stringify(sampleOutput))
+        var pp = parseToProg(sampleOutput);
+        console.log("parsed p", JSON.stringify(pp))
+        if (pp instanceof Scope.ScopeBody) {
+          console.log("RUN");
+          console.log(run(pp));
+        }
+      }
+      catch (ex) {
+        console.log("error parsing", ex)
+        // Handle parsing error
+        // [...]
+      }
+    });
+  } catch (e) {
+
+  }
+
+} else {
+
 }
 //test();

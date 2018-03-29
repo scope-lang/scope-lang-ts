@@ -1,0 +1,13 @@
+var total=10;
+for(var i=0;i<total;i++){
+  var s="";
+  for(var j=0;j<(total-i);j++){
+    s=s+" ";
+  }
+  s=s+"/";
+  for(var j=0;j<i;j++){
+    s=s+"  ";
+  }
+  s=s+"\\";
+  print(s);
+}

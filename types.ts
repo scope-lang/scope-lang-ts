@@ -29,7 +29,7 @@ export class ScopeScope implements ScopePropertyHolder {
     if(this.has(key)){
       return this.properties[key] = value;
     }
-    if(this.parent && this.parent.has(key)){
+    if(this.parent && this.parent.knows(key)){
       return this.parent.set(key,value);
     }
     return this.properties[key] = value;
@@ -112,6 +112,19 @@ export class ScopeVariableDeclarator implements ScopeExpression {
     this.name = "VarDecR";
   }
 }
+export class ScopeAssignmentExpression implements ScopeExpression {
+  init: ScopeExpression;
+  id:ScopeIdentifier;
+  name: string;
+  eval(this: ScopeAssignmentExpression, context: ScopePropertyHolder): ScopeValue {
+    return context.set(this.id.target,this.init.eval(context));
+  }
+  constructor(id:ScopeIdentifier,init:ScopeExpression) {
+    this.id=id;
+    this.init=init;
+    this.name = "VarAssin";
+  }
+}
 function falsey(v:ScopeValue):boolean{
   if(v instanceof ScopeLiteral){
     return !v.value;
@@ -141,7 +154,6 @@ export class ScopeForStatement implements ScopeExpression {
     return new ScopeUndefined();
   }
   target: ScopeExpression;
-  parameters: Array<ScopeExpression>;
   constructor(init:ScopeExpression,test:ScopeExpression,update:ScopeExpression,body:ScopeExpression) {
     this.init=init;
     this.test=test;
@@ -180,15 +192,89 @@ export class ScopeBinaryExpression implements ScopeExpression {
         }
       }
     }
+    if(this.operator=="-"){
+      var l=this.left.eval(context);
+      var r=this.right.eval(context);
+      if(l instanceof ScopeLiteral && r instanceof ScopeLiteral){
+        try{
+          return new ScopeLiteral(l.value-r.value);
+        }catch(e){
+
+        }
+      }
+    }
+    if(this.operator==">"){
+      var l=this.left.eval(context);
+      //console.log(context)
+      //console.log("tsdgf",this.left,l);
+      var r=this.right.eval(context);
+      if(l instanceof ScopeLiteral && r instanceof ScopeLiteral){
+        try{
+          return new ScopeLiteral(l.value>r.value);
+        }catch(e){
+
+        }
+      }
+    }
     return new ScopeUndefined();
   }
-  target: ScopeExpression;
   parameters: Array<ScopeExpression>;
   constructor(left:ScopeExpression,right:ScopeExpression,operator:string) {
     this.left=left;
     this.right=right;
     this.operator=operator;
     this.name = "BinExp";
+  }
+}
+export class ScopeUpdateExpression implements ScopeExpression {
+  argument: ScopeExpression;
+  right: ScopeExpression;
+  operator:string
+  name: string;
+  prefix:boolean;
+  eval(this: ScopeUpdateExpression, context: ScopePropertyHolder): ScopeValue {
+    if(this.operator=="++"){
+      var l=this.argument.eval(context);
+
+      if(l instanceof ScopeLiteral){
+        try{
+          var out=new ScopeLiteral(l.value+1);
+          var as=new ScopeAssignmentExpression(this.argument as ScopeIdentifier,out).eval(context);
+          if(this.prefix){
+            return out;
+          }else{
+            return l;
+          }
+        }catch(e){
+
+        }
+      }
+    }
+    if(this.operator=="--"){
+      var l=this.argument.eval(context);
+
+      if(l instanceof ScopeLiteral){
+        try{
+          var out=new ScopeLiteral(l.value-1);
+          var as=new ScopeAssignmentExpression(this.argument as ScopeIdentifier,out).eval(context);
+          if(this.prefix){
+            return out;
+          }else{
+            return l;
+          }
+        }catch(e){
+
+        }
+      }
+    }
+    return new ScopeUndefined();
+  }
+  parameters: Array<ScopeExpression>;
+  constructor(argument:ScopeExpression,operator:string,prefix:boolean) {
+    this.argument=argument;
+    this.operator=operator;
+    this.prefix=prefix;
+    this.name = "UpExp";
   }
 }
 export class ScopeBlock implements ScopeValue, ScopeExec {
