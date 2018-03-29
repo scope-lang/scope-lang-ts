@@ -13,7 +13,8 @@
     "typescript": "^2.8.1"
   },
   "scripts": {
-    "main": "ts-node index.ts"
+    "main": "ts-node index.ts",
+    "make-parser":"pegjs --plugin ./node_modules/ts-pegjs/src/tspegjs -o scope-peg.ts --cache scope.pegjs"
   },
   "author": "Cole Kissane <coler706@gmail.com>",
   "license": "MIT"
