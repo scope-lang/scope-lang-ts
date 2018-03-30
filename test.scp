@@ -1,7 +1,7 @@
-var total=10;
+/*var total=10;
 for(var i=0;i<total;i++){
   var s="";
-  for(var j=0;j<(total-i);j++){
+  for(var j=0;j<total-i;j++){
     s=s+" ";
   }
   s=s+"/";
@@ -10,4 +10,5 @@ for(var i=0;i<total;i++){
   }
   s=s+"\\";
   print(s);
-}
+}*/
+var x={q:1,p:"hi"};
