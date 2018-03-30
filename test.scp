@@ -1,14 +1,20 @@
-/*var total=10;
-for(var i=0;i<total;i++){
+var total=10;
+for(var i=0;i<total;i=i+1){
   var s="";
-  for(var j=0;j<total-i;j++){
+  for(var j=0;j<total-i;j=j+1){
     s=s+" ";
   }
   s=s+"/";
-  for(var j=0;j<i;j++){
-    s=s+"  ";
+  for(var j=0;j<i;j=j+1){
+    s=s+"**";
   }
   s=s+"\\";
   print(s);
-}*/
-var x={q:1,p:"hi"};
+}
+//var x={q:1,p:"hi"};
+/*
+var q=1;
+print("q:",q);
+q=2;
+print("q:",q+1,1+1,"hi"+q);
+*/

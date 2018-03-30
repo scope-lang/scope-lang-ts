@@ -1,18 +1,7 @@
-export class ScopeUndefined implements ScopeValue, ScopeExpression {
-  name: string;
-  eval(this: ScopeExpression, context: ScopePropertyHolder): ScopeValue {
-    return this;
-  }
-  constructor(){
-    this.name="Undefined";
-  }
-  toString(this:ScopeUndefined):string{
-    return undefined;
-  }
-}
+
 export class ScopeIdentifier implements ScopeExpression {
   name: string;
-  eval(this: ScopeIdentifier, context: ScopePropertyHolder): ScopeValue {
+  eval(this: ScopeIdentifier, context: V_ValueHolder): ScopeValue {
     return context.get(this.target);
   }
   target: string;
@@ -22,50 +11,11 @@ export class ScopeIdentifier implements ScopeExpression {
     this.name = "VarGet";
   }
 }
-export class ScopeCall implements ScopeExpression {
-  name: string;
-  eval(this: ScopeCall, context: ScopePropertyHolder): ScopeValue {
-    //console.log("CALL",this.target.eval(context));
-    //console.log("PARMA",this.parameters);
-    return (this.target.eval(context) as ScopeExec).eval(this.parameters, context);
-  }
-  target: ScopeExpression;
-  parameters: Array<ScopeExpression>;
-  constructor(target: ScopeExpression, parameters: Array<ScopeExpression>) {
-    this.target = target;
-    this.parameters=parameters;
-    this.name = "Call";
-  }
-}
-export class ScopeVariableDeclaration implements ScopeExpression {
-  declarations: Array<ScopeVariableDeclarator>;
-  name: string;
-  eval(this: ScopeVariableDeclaration, context: ScopePropertyHolder): ScopeValue {
-    return this.declarations.map(x=>x.eval(context));
-  }
-  constructor(declarations: Array<ScopeVariableDeclarator>) {
-    this.declarations=declarations;
-    this.name = "VarDec";
-  }
-}
-export class ScopeVariableDeclarator implements ScopeExpression {
-  init: ScopeExpression;
-  id:ScopeIdentifier;
-  name: string;
-  eval(this: ScopeVariableDeclarator, context: ScopePropertyHolder): ScopeValue {
-    return context.set(this.id.target,this.init.eval(context));
-  }
-  constructor(id:ScopeIdentifier,init:ScopeExpression) {
-    this.id=id;
-    this.init=init;
-    this.name = "VarDecR";
-  }
-}
 export class ScopeAssignmentExpression implements ScopeExpression {
   init: ScopeExpression;
   id:ScopeIdentifier;
   name: string;
-  eval(this: ScopeAssignmentExpression, context: ScopePropertyHolder): ScopeValue {
+  eval(this: ScopeAssignmentExpression, context: V_ValueHolder): ScopeValue {
     return context.set(this.id.target,this.init.eval(context));
   }
   constructor(id:ScopeIdentifier,init:ScopeExpression) {
@@ -74,114 +24,14 @@ export class ScopeAssignmentExpression implements ScopeExpression {
     this.name = "VarAssin";
   }
 }
-function falsey(v:ScopeValue):boolean{
-  if(v instanceof ScopeLiteral){
-    return !v.value;
-  }
-  if(v instanceof ScopeUndefined){
-    return true;
-  }
-  return false;
-}
-export class ScopeForStatement implements ScopeExpression {
-  init: ScopeExpression;
-  test: ScopeExpression;
-  update: ScopeExpression;
-  body: ScopeExpression;
-  name: string;
-  eval(this: ScopeForStatement, context: ScopePropertyHolder): ScopeValue {
-    var subCtx=new ScopeScope(context);
-    this.init.eval(subCtx)
-    //console.log("t",this.test.eval(subCtx));
-    for(;!falsey(this.test.eval(subCtx));this.update.eval(subCtx)){
-      var q=this.body.eval(subCtx);
-      if(q instanceof ScopeBlock){
-        q=q.eval([],subCtx);
-      }
-      //this.body.eval(subCtx);
-    }
-    return new ScopeUndefined();
-  }
-  target: ScopeExpression;
-  constructor(init:ScopeExpression,test:ScopeExpression,update:ScopeExpression,body:ScopeExpression) {
-    this.init=init;
-    this.test=test;
-    this.update=update;
-    this.body=body;
-    this.name = "For";
-  }
-}
-export class ScopeBinaryExpression implements ScopeExpression {
-  left: ScopeExpression;
-  right: ScopeExpression;
-  operator:string
-  name: string;
-  eval(this: ScopeBinaryExpression, context: ScopePropertyHolder): ScopeValue {
-    if(this.operator=="+"){
-      var l=this.left.eval(context);
-      var r=this.right.eval(context);
-      if(l instanceof ScopeLiteral && r instanceof ScopeLiteral){
-        try{
-          return new ScopeLiteral(l.value+r.value);
-        }catch(e){
 
-        }
-      }
-    }
-    if(this.operator=="<"){
-      var l=this.left.eval(context);
-      //console.log(context)
-      //console.log("tsdgf",this.left,l);
-      var r=this.right.eval(context);
-      if(l instanceof ScopeLiteral && r instanceof ScopeLiteral){
-        try{
-          return new ScopeLiteral(l.value<r.value);
-        }catch(e){
-
-        }
-      }
-    }
-    if(this.operator=="-"){
-      var l=this.left.eval(context);
-      var r=this.right.eval(context);
-      if(l instanceof ScopeLiteral && r instanceof ScopeLiteral){
-        try{
-          return new ScopeLiteral(l.value-r.value);
-        }catch(e){
-
-        }
-      }
-    }
-    if(this.operator==">"){
-      var l=this.left.eval(context);
-      //console.log(context)
-      //console.log("tsdgf",this.left,l);
-      var r=this.right.eval(context);
-      if(l instanceof ScopeLiteral && r instanceof ScopeLiteral){
-        try{
-          return new ScopeLiteral(l.value>r.value);
-        }catch(e){
-
-        }
-      }
-    }
-    return new ScopeUndefined();
-  }
-  parameters: Array<ScopeExpression>;
-  constructor(left:ScopeExpression,right:ScopeExpression,operator:string) {
-    this.left=left;
-    this.right=right;
-    this.operator=operator;
-    this.name = "BinExp";
-  }
-}
 export class ScopeUpdateExpression implements ScopeExpression {
   argument: ScopeExpression;
   right: ScopeExpression;
   operator:string
   name: string;
   prefix:boolean;
-  eval(this: ScopeUpdateExpression, context: ScopePropertyHolder): ScopeValue {
+  eval(this: ScopeUpdateExpression, context: V_ValueHolder): ScopeValue {
     if(this.operator=="++"){
       var l=this.argument.eval(context);
 
@@ -216,7 +66,7 @@ export class ScopeUpdateExpression implements ScopeExpression {
         }
       }
     }
-    return new ScopeUndefined();
+    return new V_Undefined();
   }
   parameters: Array<ScopeExpression>;
   constructor(argument:ScopeExpression,operator:string,prefix:boolean) {
@@ -226,104 +76,21 @@ export class ScopeUpdateExpression implements ScopeExpression {
     this.name = "UpExp";
   }
 }
-export class ScopeBlock implements ScopeValue, ScopeExec {
-  name: string;
-  parameterMap: ScopeReferenceMap;
-  context:ScopePropertyHolder;
-  expressions: Array<ScopeExpression>;
-  eval(this: ScopeBlock, parameters: ScopeExpression[], context: ScopePropertyHolder): ScopeValue {
-    //console.log(...parameters.map(x=>x.eval(context).toString()));
-    var subCtx=new ScopeScope(this.context);
-    this.parameterMap.apply(parameters.map(function(x) { return x.eval(context) }),subCtx);
-    var value: ScopeValue = new ScopeUndefined();
-    for (var statement of this.expressions) {
-      statement.eval(subCtx);
-    }
-    return value;
-    //return new ScopeUndefined();
-  }
-  constructor(expressions:Array<ScopeExpression>,context: ScopePropertyHolder,parameterMap?:ScopeReferenceMap) {
-    this.parameterMap=parameterMap?parameterMap: new ScopeReferenceMap();
-    this.expressions=expressions;
-    this.context=context;
-  }
-}
-export class ScopeBody implements ScopeExpression {
-  name: string;
-  eval(this: ScopeBody, context: ScopePropertyHolder): ScopeBlock {
-    return new ScopeBlock(this.expressions,context);
-  }
-  expressions: Array<ScopeExpression>;
-  constructor(expressions?:Array<ScopeExpression>) {
-    this.expressions = expressions?expressions:new Array<ScopeExpression>();
-    this.name = "Body";
-  }
-}
-export class ScopeString implements ScopeExpression, ScopeValue {
-  value: string;
-  name: string;
-  eval(this: ScopeString, context: ScopePropertyHolder): ScopeValue {
-    return this;
-  }
-  constructor(value:string) {
-    this.value=value;
-    this.name = "String";
-  }
-  toString(this:ScopeString):string{
-    return this.value;
-  }
-}
-export class ScopeNumber implements ScopeExpression, ScopeValue {
-  value: Number;
-  name: string;
-  eval(this: ScopeNumber, context: ScopePropertyHolder): ScopeValue {
-    return this;
-  }
-  constructor(value:Number) {
-    this.value=value;
-    this.name = "Number";
-  }
-  toString(this:ScopeNumber):string{
-    return this.value.toString();
-  }
-}
-export class ScopeReferenceMap {
-  keys: Array<string>;
-  constructor() {
-    this.keys = new Array<string>();
-  }
-  apply(this: ScopeReferenceMap, parameters: Array<ScopeValue>, context: ScopePropertyHolder) {
-    for (var i = 0; i < Math.min(parameters.length, this.keys.length); i++) {
-      context[this.keys[i]]=parameters[i];
-    }
-  }
-}
-export interface ScopeExec {
-  parameterMap: ScopeReferenceMap;
-  eval(this: ScopeExec, parameters: Array<ScopeExpression>, context: ScopePropertyHolder): ScopeValue;
-}
-export class ScopeNativePrint implements ScopeExec {
-  parameterMap: ScopeReferenceMap;
-  eval(this: ScopeExec, parameters: ScopeExpression[], context: ScopePropertyHolder): ScopeValue {
-    console.log(...parameters.map(x=>x.eval(context).toString()));
-    return new ScopeUndefined();
-  }
-  constructor() {
-    this.parameterMap= new ScopeReferenceMap();
-  }
-}
+
+
+
 export class ScopeObjectExpression implements ScopeExpression {
   name: string;
-  eval(this: ScopeObjectExpression, context: ScopePropertyHolder): ScopeValue {
+  eval(this: ScopeObjectExpression, context: V_ValueHolder): ScopeValue {
     return new ScopeObject(context);
   }
   constructor(){
     this.name="OBJ";
   }
 }
-export class ScopeObject implements ScopeExec, ScopePropertyHolder {
-  eval(this: ScopeObject, parameters: Array<ScopeExpression>, context: ScopePropertyHolder): ScopeValue {
-    var sc = new ScopeScope();
+export class ScopeObject implements ScopeCallee, V_ValueHolder {
+  eval(this: ScopeObject, parameters: Array<ScopeExpression>, context: V_ValueHolder): ScopeValue {
+    var sc = new V_Scope();
     return this.body.eval(parameters,sc);
   }
   knows(this: ScopeObject, key: string): boolean {
@@ -336,7 +103,7 @@ export class ScopeObject implements ScopeExec, ScopePropertyHolder {
     if(this.has(key)){
       return this.properties[key];
     }
-    return new ScopeUndefined();
+    return new V_Undefined();
   }
   set(this: ScopeObject, key: string, value: ScopeValue): ScopeValue {
     return this.properties[key] = value;
@@ -345,10 +112,10 @@ export class ScopeObject implements ScopeExec, ScopePropertyHolder {
     return this.body;
   }
   public properties: { [key:string]: ScopeValue };
-  public parameterMap: ScopeReferenceMap;
-  public body: ScopeExec;
-  constructor(context:ScopePropertyHolder,parameterMap?:ScopeReferenceMap) {
-    this.parameterMap = new ScopeReferenceMap();
-    this.body=new ScopeBlock([],context);
+  public parameterMap: V_PointerMap;
+  public body: ScopeCallee;
+  constructor(context:V_ValueHolder,parameterMap?:V_PointerMap) {
+    this.parameterMap = new V_PointerMap();
+    this.body=new V_Block([],context);
   }
 }
