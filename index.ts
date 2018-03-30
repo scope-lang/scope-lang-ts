@@ -1,18 +1,27 @@
 import { SyntaxError, parse } from './scope-peg';
-import * as Scope from './types';
+import { ScopeValue, V_Undefined } from "./src/types/value";
+import { ScopeExpression, E_Undefined } from "./src/types/expression";
+import { VariableType, V_VariablePointer, E_VariablePointer } from "./src/types/variables";
+import { V_ValueHolder, V_Scope } from "./src/types/scopes";
+import { V_PointerMap, ScopeCallee, E_Call } from "./src/types/callee";
+import {V_Block, E_Block} from "./src/types/block";
+import {C_Print} from "./src/types/print";
+import {E_String, V_String,E_Number,V_Number} from "./src/types/literals";
+import {parseToProg} from "./expressionBuilder";
 import * as fs from "fs";
 import * as path from "path";
 
-function run(program: Scope.ScopeBody) {
-  var global = new Scope.ScopeScope();
-  global.set("print", new Scope.ScopeNativePrint());
+function run(program: E_Block) {
+  var global = new V_Scope();
+  global.set(VariableType.CONST,"print", new C_Print());
   return program.eval(global).eval([], global);
 }
 function test() {
-  var program: Scope.ScopeBody = new Scope.ScopeBody();
-  //program.expressions.push(new Scope.ScopeCall(new Scope.ScopeNativePrint(), [new Scope.ScopeString("hello"), new Scope.ScopeUndefined(), new Scope.ScopeNumber(10)]));
+  var program: E_Block = new E_Block();
+  program.expressions.push(new E_Call(new E_VariablePointer(["print"]), [new E_String("hello"), new E_Undefined(), new E_Number(10)]));
   run(program);
 }
+/*
 function parseToProg(p) {
   if (p.type == "Program") {
     var program: Scope.ScopeBody = new Scope.ScopeBody();
@@ -70,11 +79,12 @@ function parseToProg(p) {
   }
   if (p.type == "UndefinedLiteral") {
 
-    return new Scope.ScopeUndefined();
+    return new Scope.V_Undefined();
   }
   throw ("No Map Yet For"+p);
-  //return new Scope.ScopeUndefined();
+  //return new Scope.V_Undefined();
 }
+*/
 
 if (process.argv.length > 2) {
   try {
@@ -89,7 +99,7 @@ if (process.argv.length > 2) {
         console.log("parsed", JSON.stringify(sampleOutput))
         var pp = parseToProg(sampleOutput);
         console.log("parsed p", JSON.stringify(pp))
-        if (pp instanceof Scope.ScopeBody) {
+        if (pp instanceof E_Block) {
           console.log("RUN");
           console.log(run(pp));
         }
@@ -105,6 +115,5 @@ if (process.argv.length > 2) {
   }
 
 } else {
-
+  test();
 }
-//test();
