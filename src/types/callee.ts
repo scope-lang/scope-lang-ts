@@ -2,6 +2,7 @@ import { ScopeValue, V_Undefined } from "./value";
 import { ScopeExpression } from "./expression";
 import { VariableType, V_VariablePointer, E_VariablePointer } from "./variables";
 import { V_ValueHolder, V_Scope } from "./scopes";
+
 export interface ScopeCallee extends ScopeValue {
   parameterMap: V_PointerMap;
   eval(this: ScopeCallee, parameters: Array<ScopeExpression>, context: V_ValueHolder): ScopeValue;

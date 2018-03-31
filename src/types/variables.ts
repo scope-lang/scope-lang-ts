@@ -1,4 +1,4 @@
-import {ScopeValue} from "./value";
+import { ScopeValue } from "./value";
 import { V_ValueHolder } from "./scopes";
 import { ScopeExpression } from "./expression";
 export enum VariableType {
@@ -10,21 +10,22 @@ export class V_VariablePointer implements ScopeValue {
   base(this: V_VariablePointer): ScopeValue {
     return this.getValue().base();
   }
-  targetHolder:V_ValueHolder;
-  targetPath:string[];
-  setValue(type:VariableType,value:ScopeValue,context:V_ValueHolder):ScopeValue{
-    if(type==VariableType.CHANGE){
-      return this.targetHolder.set(VariableType.VAR,this.targetPath[0],value);
-    }else{
-      return context.set(type,this.targetPath[0],value);
+  targetHolder: V_ValueHolder;
+  targetPath: string[];
+  memberType:string;
+  setValue(type: VariableType, value: ScopeValue, context: V_ValueHolder): ScopeValue {
+    if (type == VariableType.CHANGE|| this.memberType=="object") {
+      return this.targetHolder.set(VariableType.VAR, this.targetPath[0], value);
+    } else {
+      return context.set(type, this.targetPath[0], value);
     }
   }
-  getValue():ScopeValue{
+  getValue(): ScopeValue {
     return this.targetHolder.get(this.targetPath[0]);
   }
-  constructor(targetHolder:V_ValueHolder,targetPath:string[]) {
-    this.targetHolder=targetHolder;
-    this.targetPath=targetPath;
+  constructor(targetHolder: V_ValueHolder, targetPath: string[]) {
+    this.targetHolder = targetHolder;
+    this.targetPath = targetPath;
   }
 }
 export class E_VariablePointer implements ScopeExpression {
@@ -33,9 +34,25 @@ export class E_VariablePointer implements ScopeExpression {
   eval(this: E_VariablePointer, context: V_ValueHolder): V_VariablePointer {
     return context.pointer(this.targetPath[0]);
   }
-  targetPath:string[];
-  constructor(targetPath:string[]) {
-    this.targetPath=targetPath;
+  targetPath: string[];
+  constructor(targetPath: string[]) {
+    this.targetPath = targetPath;
+  }
+}
+export class E_MemberExpression implements ScopeExpression {
+  start: Number;
+  end: Number;
+  eval(this: E_MemberExpression, context: V_ValueHolder): V_VariablePointer {
+    var p=(this.targetObj.eval(context).base() as V_ValueHolder).pointer(this.targetProp instanceof E_VariablePointer ? this.targetProp.targetPath[0] : this.targetProp.eval(context).toString());
+    p.memberType="object";
+    //console.log("M:",this,p);
+    return p;
+  }
+  targetObj: ScopeExpression;
+  targetProp: ScopeExpression;
+  constructor(targetObj: ScopeExpression, targetProp: ScopeExpression) {
+    this.targetObj=targetObj;
+    this.targetProp = targetProp;
   }
 }
 
@@ -44,22 +61,27 @@ export class E_VariableDeclaration implements ScopeExpression {
   end: Number;
   declarations: Array<E_VariableDeclarator>;
   eval(this: E_VariableDeclaration, context: V_ValueHolder): ScopeValue {
-    return this.declarations.map(x=>x.eval(context))[0];
+    return this.declarations.map(x => x.eval(context))[0];
   }
   constructor(declarations: Array<E_VariableDeclarator>) {
-    this.declarations=declarations;
+    this.declarations = declarations;
+    for(var i=0;i<this.declarations.length;i++){
+      this.declarations[i].kind=VariableType.VAR;
+    }
   }
 }
 export class E_VariableDeclarator implements ScopeExpression {
   start: Number;
   end: Number;
   init: ScopeExpression;
-  id:E_VariablePointer;
+  id: E_VariablePointer;
+  kind:VariableType;
   eval(this: E_VariableDeclarator, context: V_ValueHolder): ScopeValue {
-    return this.id.eval(context).setValue(VariableType.VAR,this.init.eval(context),context);//context.set(this.id.eval(),this.init.eval(context));
+    return this.id.eval(context).setValue(this.kind, this.init.eval(context).base(), context);//context.set(this.id.eval(),this.init.eval(context));
   }
-  constructor(id:E_VariablePointer,init:ScopeExpression) {
-    this.id=id;
-    this.init=init;
+  constructor(id: E_VariablePointer, init: ScopeExpression,kind?:VariableType) {
+    this.id = id;
+    this.init = init;
+    this.kind=kind?kind:VariableType.CHANGE;
   }
 }

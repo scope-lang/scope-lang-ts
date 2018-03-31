@@ -27,11 +27,12 @@ export class E_ForStatement implements ScopeExpression {
     var subCtx = new V_Scope(context);
     this.init.eval(subCtx)
     //console.log("t",this.test.eval(subCtx));
+    var q=new V_Undefined();
     for (; !falsey(this.test.eval(subCtx).base()); this.update.eval(subCtx)) {
-      var q = (this.body.eval(subCtx).base() as ScopeCallee).eval([], subCtx);
+      q = (this.body.eval(subCtx).base() as ScopeCallee).eval([], subCtx);
       //this.body.eval(subCtx);
     }
-    return new V_Undefined();
+    return q;
   }
   target: ScopeExpression;
   constructor(init: ScopeExpression, test: ScopeExpression, update: ScopeExpression, body: ScopeExpression) {
@@ -39,5 +40,30 @@ export class E_ForStatement implements ScopeExpression {
     this.test = test;
     this.update = update;
     this.body = body;
+  }
+}
+export class E_IfStatement implements ScopeExpression {
+  consequent: ScopeExpression;
+  alternate:ScopeExpression;
+  test: ScopeExpression;
+  start: Number;
+  end: Number;
+  eval(this: E_IfStatement, context: V_ValueHolder): ScopeValue {
+    var subCtx = new V_Scope(context);
+    var q=new V_Undefined();
+    //console.log("t",this.test.eval(subCtx));
+    if(!falsey(this.test.eval(subCtx).base())) {
+      q = (this.consequent.eval(subCtx).base() as ScopeCallee).eval([], subCtx);
+      //this.body.eval(subCtx);
+    }else{
+      q = (this.alternate.eval(subCtx).base() as ScopeCallee).eval([], subCtx);
+    }
+    return q;
+  }
+  target: ScopeExpression;
+  constructor(test: ScopeExpression, consequent: ScopeExpression,alternate?: ScopeExpression) {
+    this.test = test;
+    this.consequent=consequent;
+    this.alternate=alternate?alternate:new E_Block();
   }
 }
