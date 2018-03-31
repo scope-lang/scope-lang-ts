@@ -15,6 +15,7 @@ export class V_Block implements ScopeValue, ScopeCallee {
   eval(this: V_Block, parameters: ScopeExpression[], context: V_ValueHolder): ScopeValue {
     //console.log(...parameters.map(x=>x.eval(context).toString()));
     var subCtx=new V_Scope(this.context);
+    subCtx.self=this.context.self;
     this.parameterMap.apply(parameters.map(function(x) { return x.eval(context) }),subCtx);
     var value: ScopeValue = new V_Undefined();
     for (var statement of this.expressions) {

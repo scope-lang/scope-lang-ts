@@ -7,11 +7,13 @@ export interface V_ValueHolder extends ScopeValue {
   set(this: V_ValueHolder, type:VariableType,key: string, value: ScopeValue): ScopeValue;
   has(this: V_ValueHolder, key: string): boolean;
   knows(this: V_ValueHolder, key: string): boolean;
+  self:V_ValueHolder;
 }
 export class V_Scope implements V_ValueHolder {
   base(this: V_Scope): ScopeValue {
     return this;
   }
+  self:V_ValueHolder;
   pointer(this: V_Scope, key: string): V_VariablePointer {
     var pList=this.parentList();
     if(this.has(key)){
@@ -95,5 +97,6 @@ export class V_Scope implements V_ValueHolder {
     if (parents) {
       this.parents = parents;
     }
+    this.self=this;
   }
 }

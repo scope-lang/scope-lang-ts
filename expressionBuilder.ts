@@ -1,5 +1,5 @@
 import { ScopeValue, V_Undefined } from "./src/types/value";
-import { ScopeExpression, E_Undefined, E_Sequence } from "./src/types/expression";
+import { ScopeExpression, E_Undefined, E_Sequence, E_This } from "./src/types/expression";
 import { VariableType, V_VariablePointer, E_VariablePointer, E_VariableDeclaration, E_VariableDeclarator, E_MemberExpression } from "./src/types/variables";
 import { V_ValueHolder, V_Scope } from "./src/types/scopes";
 import { V_PointerMap, ScopeCallee, E_Call, E_PointerMap } from "./src/types/callee";
@@ -85,6 +85,10 @@ export function parseToProg(p) {
     }else{
       return new E_IfStatement( parseToProg(p.test), parseToProg(p.consequent));
     }
+
+  }
+  if (p.type == "ThisExpression") {
+    return new E_This();
 
   }
   if (p.type == "EmptyStatement") {

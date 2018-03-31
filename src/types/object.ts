@@ -28,7 +28,8 @@ export class V_Object extends V_Block implements ScopeCallee, V_ValueHolder {
     return this;
   }
   eval(this: V_Object, parameters: Array<ScopeExpression>, context: V_ValueHolder): ScopeValue {
-    var subCtx=new V_Scope(this,[this.context]);
+    var subCtx=this.protoCopy();
+    subCtx.parent=this.context;
     if (this.properties["action"]) {
       if (this.properties["action"][1]) {
         var action = this.properties["action"][1];
@@ -54,38 +55,90 @@ export class V_Object extends V_Block implements ScopeCallee, V_ValueHolder {
     }
     return new V_Undefined();
   }
-  pointer(this: V_Object, key: string): V_VariablePointer {
-    if (this.has(key)) {
-      return new V_VariablePointer(this, [key]);
+  pointer(this: V_Scope, key: string): V_VariablePointer {
+    var pList=this.parentList();
+    if(this.has(key)){
+      return new V_VariablePointer(this,[key]);
     }
-    return new V_VariablePointer(this, [key]);
+    if (pList.length>0) {
+      for(var p of pList){
+        if(p.knows(key)){
+          return new V_VariablePointer(p,[key]);
+        }
+      }
+    }
+    return new V_VariablePointer(this,[key]);
   }
-  knows(this: V_Object, key: string): boolean {
-    return this.has(key);
+  public parent?: V_ValueHolder;
+  public parents?:V_ValueHolder[];
+  parentList(this:V_Scope):V_ValueHolder[]{
+    if (this.parent) {
+      return [this.parent].concat(this.parents?this.parents:[]);
+    }else{
+      return this.parents?this.parents:[];
+    }
+  }
+  knows(this: V_Scope, key: string): boolean {
+    var pList=this.parentList();
+    if(this.has(key)){
+      return true;
+    }
+    if (pList.length>0) {
+      for(var p of pList){
+        if(p.knows(key)){
+          return true;
+        }
+      }
+    }
+    return false;
   }
   has(this: V_ValueHolder, key: string): boolean {
     return !(!this.properties[key]);
   }
-  get(this: V_Object, key: string): ScopeValue {
-    if (this.has(key)) {
+  get(this: V_Scope, key: string): ScopeValue {
+    var pList=this.parentList();
+    if(this.has(key)){
+      if(this.properties[key][1] instanceof V_Object){
+        console.log("Key",key);
+        (this.properties[key][1] as V_Object).self=this;
+      }
       return this.properties[key][1];
     }
-    throw "no key "+key;
+    if (pList.length>0) {
+      for(var p of pList){
+        if(p.knows(key)){
+          return p.get(key);
+        }
+      }
+    }
+
+    //throw "undefined get :"+key;
+    return new V_Undefined();
   }
-  set(this: V_Object, type: VariableType, key: string, value: ScopeValue): ScopeValue {
+  set(this: V_Object,  type:VariableType, key: string, value: ScopeValue): ScopeValue {
     if(key=="action"){
       return this.setAction(value);
     }else{
+
       if (this.has(key)) {
-        if (this.properties[key][0] == VariableType.VAR) {
-          return this.properties[key][1] = value;
-        } else {
+        if(this.properties[key][0]==VariableType.VAR){
+          return this.properties[key][1]=value;
+        }else{
           throw "CANT CHANGE IT";
         }
       }
-      return (this.properties[key] = [type, value])[1];
+      var pList=this.parentList();
+      if (pList.length>0) {
+        for(var p of pList){
+          if(p.knows(key)){
+            return p.set(type,key, value);
+          }
+        }
+      }
     }
+    return (this.properties[key] = [type,value])[1];
   }
+
   public properties: { [key: string]: [VariableType, ScopeValue] };
   setAction(this: V_Object, value: ScopeValue): ScopeValue {
     var v=value.base();
@@ -116,12 +169,28 @@ export class V_Object extends V_Block implements ScopeCallee, V_ValueHolder {
     } else {
       this.properties["action"] = [VariableType.VAR, new V_Block(context,expressions,parameterMap)];
     }
+    this.self=this;
   }
+  self:V_ValueHolder;
   toString(this:V_Object):string{
     var stringProps=[];
     for (var key in this.properties) {
       stringProps.push(key+":"+this.properties[key][1].toString());
     }
     return "{"+stringProps.join(",")+"}"
+  }
+  protoCopy(this:V_Object):V_Object{
+    var cloneProps={};
+    for (var key in this.properties) {
+      cloneProps[key]=[this.properties[key][0],this.properties[key][1].base()];
+    }
+    var c=new V_Object(this.context,cloneProps,[],this.parameterMap);
+    /*for (var key in c.properties) {
+      if(c.properties[key][1] instanceof V_Object){
+
+        //(c.properties[key][1] as V_Object).self=this;
+      }
+    }*/
+    return c;
   }
 }

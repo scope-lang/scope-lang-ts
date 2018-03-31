@@ -5,6 +5,7 @@ var sqrt=(x)->{
   }
   n
 };
+/*
 var sqrt3=sqrt(3);
 var rows=40;
 for(var i=0;i<rows;i=i+1){
@@ -21,4 +22,16 @@ for(var i=0;i<rows;i=i+1){
   }
   s=s+"";
   print(s);
-}
+}*/
+var Vec=(x,y)->{
+  this.x=x;
+  this.y=y;
+  this
+};
+Vec.len=(self)->{
+  sqrt(self.x*self.x+self.y*self.y)
+};
+var a=Vec(2,3);
+print(a);
+var b=Vec(4,3);
+print(a,b,a.len(a));
