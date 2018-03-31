@@ -28,10 +28,7 @@ export class E_ForStatement implements ScopeExpression {
     this.init.eval(subCtx)
     //console.log("t",this.test.eval(subCtx));
     for (; !falsey(this.test.eval(subCtx).base()); this.update.eval(subCtx)) {
-      var q = this.body.eval(subCtx);
-      if (q instanceof V_Block) {
-        q = q.eval([], subCtx);
-      }
+      var q = (this.body.eval(subCtx).base() as ScopeCallee).eval([], subCtx);
       //this.body.eval(subCtx);
     }
     return new V_Undefined();

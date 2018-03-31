@@ -1,20 +1,29 @@
-var total=10;
+/*var total=10;
+var sqrt3=1;
+for(var i=0;i<2000;i=i+1){
+  sqrt3=3/sqrt3/2+sqrt3/2;
+}
+print(sqrt3,sqrt3*sqrt3);
+sqrt3=sqrt3*5/11;
 for(var i=0;i<total;i=i+1){
   var s="";
-  for(var j=0;j<total-i;j=j+1){
+  var space=(total-i)/sqrt3;
+  var width=(i)/sqrt3;
+  for(var j=0;j<space;j=j+1){
     s=s+" ";
   }
-  s=s+"/";
-  for(var j=0;j<i;j=j+1){
-    s=s+"**";
+  for(var j=0;j<width*2;j=j+1){
+    s=s+"#";
   }
-  s=s+"\\";
+  s=s+"";
   print(s);
-}
-//var x={q:1,p:"hi"};
-/*
-var q=1;
-print("q:",q);
-q=2;
-print("q:",q+1,1+1,"hi"+q);
-*/
+}*/
+/*var f={
+print("hello");
+};*/
+var w=(a)->{
+print("hi: "+a);
+};
+for(var i=0;i<10;i=i+1){w(i);};//say hello 10 times
+//for(var i=0;i<10;i=i+1)w;//say hello 10 times
+print({10*10}());

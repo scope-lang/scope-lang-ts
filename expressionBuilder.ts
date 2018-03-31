@@ -2,7 +2,7 @@ import { ScopeValue, V_Undefined } from "./src/types/value";
 import { ScopeExpression, E_Undefined } from "./src/types/expression";
 import { VariableType, V_VariablePointer, E_VariablePointer, E_VariableDeclaration, E_VariableDeclarator } from "./src/types/variables";
 import { V_ValueHolder, V_Scope } from "./src/types/scopes";
-import { V_PointerMap, ScopeCallee, E_Call } from "./src/types/callee";
+import { V_PointerMap, ScopeCallee, E_Call, E_PointerMap } from "./src/types/callee";
 import {V_Block, E_Block} from "./src/types/block";
 import {C_Print} from "./src/types/print";
 import {E_String, V_String,E_Number,V_Number, E_Literal} from "./src/types/literals";
@@ -16,6 +16,9 @@ export function parseToProg(p) {
   }
   if (p.type == "BlockStatement") {
     var program: E_Block = new E_Block();
+    if(p.map){
+      program.parameterMap=parseToProg(p.map);
+    }
     program.expressions = p.body.map(x => parseToProg(x));
     return program;
   }
@@ -39,6 +42,11 @@ export function parseToProg(p) {
 
     return new E_Literal(p.value);
   }
+  if (p.type == "PointerMapLiteral") {
+
+
+    return new E_PointerMap(p.items.map(x => parseToProg(x)));
+  }
   if (p.type == "VariableDeclaration") {
 
     return new E_VariableDeclaration(p.declarations.map(x => parseToProg(x)));
@@ -60,6 +68,10 @@ export function parseToProg(p) {
 
     return new E_ForStatement(parseToProg(p.init), parseToProg(p.test), parseToProg(p.update), parseToProg(p.body));
   }
+  if (p.type == "EmptyStatement") {
+
+    return new E_Block();
+  }
 
   /*if (p.type == "ForStatement") {
 
@@ -74,6 +86,6 @@ export function parseToProg(p) {
 
     return new E_Undefined();
   }
-  throw ("No Map Yet For"+p);
+  throw ("No Map Yet For"+p+p.type);
   //return new Scope.V_Undefined();
 }

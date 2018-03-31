@@ -25,6 +25,28 @@ export class E_BinaryExpression implements ScopeExpression {
         }
       }
     }
+    if(this.operator=="*"){
+      var l=this.left.eval(context).base();
+      var r=this.right.eval(context).base();
+      if(l instanceof V_Literal && r instanceof V_Literal){
+        try{
+          return new V_Literal(l.value*r.value);
+        }catch(e){
+
+        }
+      }
+    }
+    if(this.operator=="/"){
+      var l=this.left.eval(context).base();
+      var r=this.right.eval(context).base();
+      if(l instanceof V_Literal && r instanceof V_Literal){
+        try{
+          return new V_Literal(l.value/r.value);
+        }catch(e){
+
+        }
+      }
+    }
     if(this.operator=="<"){
       var l=this.left.eval(context).base();
       //console.log(context)
@@ -33,6 +55,19 @@ export class E_BinaryExpression implements ScopeExpression {
       if(l instanceof V_Literal && r instanceof V_Literal){
         try{
           return new V_Literal(l.value<r.value);
+        }catch(e){
+
+        }
+      }
+    }
+    if(this.operator=="<="){
+      var l=this.left.eval(context).base();
+      //console.log(context)
+      //console.log("tsdgf",this.left,l);
+      var r=this.right.eval(context).base();
+      if(l instanceof V_Literal && r instanceof V_Literal){
+        try{
+          return new V_Literal(l.value<=r.value);
         }catch(e){
 
         }
@@ -62,7 +97,33 @@ export class E_BinaryExpression implements ScopeExpression {
         }
       }
     }
-    return new V_Undefined();
+    if(this.operator==">="){
+      var l=this.left.eval(context).base();
+      //console.log(context)
+      //console.log("tsdgf",this.left,l);
+      var r=this.right.eval(context).base();
+      if(l instanceof V_Literal && r instanceof V_Literal){
+        try{
+          return new V_Literal(l.value>=r.value);
+        }catch(e){
+
+        }
+      }
+    }
+    if(this.operator=="%"){
+      var l=this.left.eval(context).base();
+      //console.log(context)
+      //console.log("tsdgf",this.left,l);
+      var r=this.right.eval(context).base();
+      if(l instanceof V_Literal && r instanceof V_Literal){
+        try{
+          return new V_Literal(l.value%r.value);
+        }catch(e){
+
+        }
+      }
+    }
+    throw this.operator+" wont work here";
   }
   parameters: Array<ScopeExpression>;
   constructor(left:ScopeExpression,right:ScopeExpression,operator:string) {

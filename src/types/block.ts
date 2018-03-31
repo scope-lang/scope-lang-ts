@@ -2,7 +2,7 @@ import { ScopeValue, V_Undefined } from "./value";
 import { ScopeExpression } from "./expression";
 import { VariableType, V_VariablePointer } from "./variables";
 import { V_ValueHolder, V_Scope } from "./scopes";
-import { V_PointerMap, ScopeCallee } from "./callee";
+import { V_PointerMap, ScopeCallee, E_PointerMap } from "./callee";
 export class V_Block implements ScopeValue, ScopeCallee {
   base(this: ScopeValue): ScopeValue {
     return this;
@@ -17,7 +17,7 @@ export class V_Block implements ScopeValue, ScopeCallee {
     this.parameterMap.apply(parameters.map(function(x) { return x.eval(context) }),subCtx);
     var value: ScopeValue = new V_Undefined();
     for (var statement of this.expressions) {
-      statement.eval(subCtx);
+      value=statement.eval(subCtx);
     }
     return value;
     //return new V_Undefined();
@@ -32,10 +32,12 @@ export class E_Block implements ScopeExpression {
   start:Number;
   end:Number;
   eval(this: E_Block, context: V_ValueHolder): V_Block {
-    return new V_Block(this.expressions,context);
+    return new V_Block(this.expressions,context,this.parameterMap.eval(context));
   }
   expressions: Array<ScopeExpression>;
-  constructor(expressions?:Array<ScopeExpression>) {
+  parameterMap: E_PointerMap;
+  constructor(expressions?:Array<ScopeExpression>,parameterMap?:E_PointerMap) {
     this.expressions = expressions?expressions:new Array<ScopeExpression>();
+    this.parameterMap=parameterMap?parameterMap: new E_PointerMap([]);
   }
 }

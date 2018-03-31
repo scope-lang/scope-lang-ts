@@ -503,6 +503,7 @@ PrimaryExpression
   / Literal
   / ArrayLiteral
   / ObjectLiteral
+  / Block
   / "(" __ expression:Expression __ ")" { return expression; }
 
 ArrayLiteral
@@ -549,8 +550,21 @@ ObjectLiteral
   / "{" __ properties:PropertyNameAndValueList __ "," __ "}" {
        return { type: "ObjectExpression", properties: properties };
      }
+
+PointerMapLiteral
+ = "(" __ ")" { return { type: "PointerMapLiteral", items: [] }; }
+ / "(" __ properties:PointerNameAndValueList __ ")" {
+      return { type: "PointerMapLiteral", items: properties };
+    }
+ / "(" __ properties:PointerNameAndValueList __ "," __ ")" {
+      return { type: "PointerMapLiteral", items: properties };
+    }
 PropertyNameAndValueList
   = head:PropertyAssignment tail:(__ "," __ PropertyAssignment)* {
+      return buildList(head, tail, 3);
+    }
+PointerNameAndValueList
+  = head:MemberExpression tail:(__ "," __ MemberExpression)* {
       return buildList(head, tail, 3);
     }
 
@@ -907,6 +921,7 @@ AssignmentExpression
       };
     }
   / ConditionalExpression
+  / Block
 
 AssignmentExpressionNoIn
   = left:LeftHandSideExpression __
@@ -986,7 +1001,13 @@ Block
         body: optionalList(extractOptional(body, 0))
       };
     }
-
+  / map:PointerMapLiteral __ "->" __ "{" __ body:(StatementList __)? "}" {
+        return {
+          type: "BlockStatement",
+          body: optionalList(extractOptional(body, 0)),
+          map: map
+        };
+      }
 StatementList
   = head:Statement tail:(__ Statement)* { return buildList(head, tail, 1); }
 
