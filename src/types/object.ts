@@ -99,7 +99,7 @@ export class V_Object extends V_Block implements ScopeCallee, V_ValueHolder {
     var pList=this.parentList();
     if(this.has(key)){
       if(this.properties[key][1] instanceof V_Object){
-        console.log("Key",key);
+        //console.log("Key",key);
         (this.properties[key][1] as V_Object).self=this;
       }
       return this.properties[key][1];
