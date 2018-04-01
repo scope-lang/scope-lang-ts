@@ -123,7 +123,11 @@ export class E_BinaryExpression implements ScopeExpression {
         }
       }
     }
-    throw this.operator+" wont work here";
+    var l=this.left.eval(context).base();
+    //console.log(context)
+    //console.log("tsdgf",this.left,l);
+    var r=this.right.eval(context).base();
+    throw this.operator+" wont work here"+"("+l+","+r+")";
   }
   parameters: Array<ScopeExpression>;
   constructor(left:ScopeExpression,right:ScopeExpression,operator:string) {

@@ -6,7 +6,8 @@ import { V_ValueHolder, V_Scope } from "./src/types/scopes";
 import { V_PointerMap, ScopeCallee, E_Call } from "./src/types/callee";
 import {V_Block, E_Block} from "./src/types/block";
 import {C_Print} from "./src/types/print";
-import {E_String, V_String,E_Number,V_Number} from "./src/types/literals";
+import {C_Custom} from "./src/types/native";
+import {E_String, V_String,E_Number,V_Number,V_Literal} from "./src/types/literals";
 import {parseToProg} from "./expressionBuilder";
 import * as fs from "fs";
 import * as path from "path";
@@ -14,6 +15,18 @@ import * as path from "path";
 function run(program: E_Block) {
   var global = new V_Scope();
   global.set(VariableType.CONST,"print", new C_Print());
+  global.set(VariableType.CONST,"sqrt", new C_Custom(function(parameters,context){
+    return new V_Literal(Math.sqrt(parameters.map((x,i,a)=>{return ((x.value as number)||0)})[0]));
+  }));
+  global.set(VariableType.CONST,"sin", new C_Custom(function(parameters,context){
+    return new V_Literal(Math.sin(...parameters.map((x,i,a)=>{return ((x.value as number)||0)})));
+  }));
+  global.set(VariableType.CONST,"cos", new C_Custom(function(parameters,context){
+    return new V_Literal(Math.cos(...parameters.map((x,i,a)=>{return ((x.value as number)||0)})));
+  }));
+  global.set(VariableType.CONST,"pow", new C_Custom(function(parameters,context){
+    return new V_Literal(Math.pow(...parameters.map((x,i,a)=>{return ((x.value as number)||0)})));
+  }));
   return program.eval(global).eval([], global);
 }
 function test() {

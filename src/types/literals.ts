@@ -65,7 +65,7 @@ export class V_Literal implements ScopeValue {
     this.value=value;
   }
   toString(this:V_Literal):string{
-    return this.value.toString();
+    return (this.value||"").toString();
   }
 }
 export class E_Literal implements ScopeExpression{
