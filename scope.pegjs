@@ -1001,7 +1001,7 @@ Block
         body: optionalList(extractOptional(body, 0))
       };
     }
-  / map:PointerMapLiteral __ "->" __ "{" __ body:(StatementList __)? "}" {
+  / map:PointerMapLiteral __ "::" __ "{" __ body:(StatementList __)? "}" {
         return {
           type: "BlockStatement",
           body: optionalList(extractOptional(body, 0)),

@@ -4,6 +4,33 @@ import { VariableType, V_VariablePointer } from "./variables";
 import { V_ValueHolder, V_Scope } from "./scopes";
 import { V_PointerMap, ScopeCallee, E_PointerMap } from "./callee";
 import { V_Object} from "./object";
+export enum ReturnType{
+  Return,
+  Continue,
+  Break,
+}
+export class V_Return implements ScopeValue {
+  base(this: V_Return): ScopeValue {
+    return this.value?this.value:new V_Undefined();
+  }
+  value?:ScopeValue;
+  rtype:ReturnType;
+/*  evalProto(this: V_Block, parameters: ScopeExpression[], context: V_ValueHolder,proto: V_Object): ScopeValue {
+    //console.log(...parameters.map(x=>x.eval(context).toString()));
+    var subCtx=new V_Scope(proto);
+    this.parameterMap.apply(parameters.map(function(x) { return x.eval(context) }),subCtx);
+    var value: ScopeValue = new V_Undefined();
+    for (var statement of this.expressions) {
+      value=statement.eval(subCtx);
+    }
+    return subCtx;
+    //return new V_Undefined();
+  }*/
+  constructor(rtype:ReturnType,value?: ScopeValue) {
+    this.value=value;
+    this.rtype=rtype;
+  }
+}
 export class V_Block implements ScopeValue, ScopeCallee {
   base(this: ScopeValue): ScopeValue {
     return this;
@@ -20,6 +47,11 @@ export class V_Block implements ScopeValue, ScopeCallee {
     var value: ScopeValue = new V_Undefined();
     for (var statement of this.expressions) {
       value=statement.eval(subCtx);
+      if(value instanceof V_Return||value.rtype!==undefined){
+        // console.log("FOUND RET",value);
+        return value;
+        //break;
+      }
     }
     return value;
     //return new V_Undefined();

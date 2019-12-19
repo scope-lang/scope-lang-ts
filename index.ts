@@ -11,20 +11,43 @@ import {E_String, V_String,E_Number,V_Number,V_Literal} from "./src/types/litera
 import {parseToProg} from "./expressionBuilder";
 import * as fs from "fs";
 import * as path from "path";
+import { V_Object } from './src/types/object';
 
 function run(program: E_Block) {
   var global = new V_Scope();
-  global.set(VariableType.CONST,"print", new C_Print());
-  global.set(VariableType.CONST,"sqrt", new C_Custom(function(parameters,context){
+  // global.set(VariableType.CONST,"print", new C_Print());
+  // // global.set(VariableType.CONST,"Math", new V_Object(global));
+  // global.set(VariableType.CONST,"sqrt", new C_Custom(function(parameters,context){
+  //   return new V_Literal(Math.sqrt(parameters.map((x,i,a)=>{return ((x.value as number)||0)})[0]));
+  // }));
+  // global.set(VariableType.CONST,"sin", new C_Custom(function(parameters,context){
+  //   return new V_Literal(Math.sin(...parameters.map((x,i,a)=>{return ((x.value as number)||0)})));
+  // }));
+  // global.set(VariableType.CONST,"cos", new C_Custom(function(parameters,context){
+  //   return new V_Literal(Math.cos(...parameters.map((x,i,a)=>{return ((x.value as number)||0)})));
+  // }));
+  // global.set(VariableType.CONST,"pow", new C_Custom(function(parameters,context){
+  //   return new V_Literal(Math.pow(...parameters.map((x,i,a)=>{return ((x.value as number)||0)})));
+  // }));
+  global.set(VariableType.CONST,"console", new V_Object(global));
+  global.set(VariableType.CONST,"Math", new V_Object(global));
+  (global.get("console") as V_Object).set(VariableType.CONST,"log", new C_Print());
+  (global.get("console") as V_Object).set(VariableType.CONST,"size", new C_Custom(function(parameters,context){
+    return new V_Object(global,{"columns":[VariableType.VAR, new V_Literal(process.stdout.columns)],"rows":[VariableType.VAR, new V_Literal(process.stdout.rows)]});
+  }));
+  (global.get("Math") as V_Object).set(VariableType.CONST,"sqrt", new C_Custom(function(parameters,context){
     return new V_Literal(Math.sqrt(parameters.map((x,i,a)=>{return ((x.value as number)||0)})[0]));
   }));
-  global.set(VariableType.CONST,"sin", new C_Custom(function(parameters,context){
+  (global.get("Math") as V_Object).set(VariableType.CONST,"atan2", new C_Custom(function(parameters,context){
+    return new V_Literal(Math.atan2(parameters.map((x,i,a)=>{return ((x.value as number)||0)})[0]));
+  }));
+  (global.get("Math") as V_Object).set(VariableType.CONST,"sin", new C_Custom(function(parameters,context){
     return new V_Literal(Math.sin(...parameters.map((x,i,a)=>{return ((x.value as number)||0)})));
   }));
-  global.set(VariableType.CONST,"cos", new C_Custom(function(parameters,context){
+  (global.get("Math") as V_Object).set(VariableType.CONST,"cos", new C_Custom(function(parameters,context){
     return new V_Literal(Math.cos(...parameters.map((x,i,a)=>{return ((x.value as number)||0)})));
   }));
-  global.set(VariableType.CONST,"pow", new C_Custom(function(parameters,context){
+  (global.get("Math") as V_Object).set(VariableType.CONST,"pow", new C_Custom(function(parameters,context){
     return new V_Literal(Math.pow(...parameters.map((x,i,a)=>{return ((x.value as number)||0)})));
   }));
   return program.eval(global).eval([], global);
@@ -50,7 +73,8 @@ if (process.argv.length > 2) {
         console.log("parsed p", JSON.stringify(pp))
         if (pp instanceof E_Block) {
           console.log("RUN");
-          console.log(run(pp));
+          run(pp)
+          // console.log(run(pp));
         }
       }
       catch (ex) {

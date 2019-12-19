@@ -1,0 +1,156 @@
+var cpow=(obj,p)::{
+var angle=Math.atan2(obj.i,obj.r)*p;
+var len=Math.pow(Math.pow(obj.i*obj.i+obj.r*obj.r,0.5),p);
+return {r:Math.cos(angle)*len,i:Math.sin(angle)*len};
+};
+var cadd=(a,b)::{
+return {r:a.r+b.r,i:a.i+b.i};
+};
+var standard=["@", "$", "B", "%", "8", "&", "W", "M", "#", "*", "o", "a", "h", "k", "b", "d", "p", "q", "w", "m", "Z", "O", "0", "Q", "L", "C", "J", "U", "Y", "X", "z", "c", "v", "u", "n", "x", "r", "j", "f", "t", "/", "|", "(", ")", "1", "{", "}", "[", "]", "?", "-", "_", "+", "~", "<", ">", "i", "!", "l", "I", ";", ":", ",", "\"", "^", "`", "'", ".", " "];
+var mandelbroto=(cx,cy)::{
+  var X=cx+0;
+  var Y=cy+0;
+  var diverges=false;
+  for(var i=0;i<64;i=i+1){
+    if(X*X+Y*Y>4){
+      return i;
+    }
+
+    var zx=X*X-Y*Y;
+    var zy=2*Y*X;
+    Y=zy+cy;
+
+    X=zx+cx;
+  }
+  return 64;
+}
+var mandelbrot=(x,y)::{
+    return standard[mandelbroto(x,y)];
+var c={r:x,i:y};//{r:-0.2,i:0};//{r:x,i:y};
+var z={r:x+0,i:y+0};
+var q=0;
+for(var n=0;n<68;n=n+1){
+  z=cadd(cpow(z,2),c);
+  q=n+0;
+  if(Math.pow(z.i*z.i+z.r*z.r,0.5)>2) {
+      var l=n+0;
+      //console.log(l)
+      //return standard[l];
+    break;
+  }
+}
+return standard[q];
+};
+var termSize=console.size();
+var xScale=3.5/8;
+var pictureSize=termSize.rows-2;
+var intro=[];
+var infoWidth=termSize.columns-(pictureSize/xScale+2);
+var infoPadding={x:1,y:1};
+for(var i=0;i<pictureSize;i=i+1){
+var line="│";
+for(var j=0;j<infoWidth-2;j=j+1){
+line=line+" ";
+}
+intro[i]=line+"│";
+}
+intro[0]="┌";
+intro[pictureSize-1]="└";
+for(var j=0;j<infoWidth-2;j=j+1){
+intro[0]=intro[0]+"─";
+intro[pictureSize-1]=intro[pictureSize-1]+"─";
+}
+intro[0]=intro[0]+"┐";
+intro[pictureSize-1]=intro[pictureSize-1]+"┘";
+var text=[
+"Welcome to {SCOPE}",
+"",
+"{SCOPE} is a programming language where you can have much more control over where functions are executed than other programming languages",
+"",
+"Defining A Variable:",
+"",
+"var x=1*2*3*4;",
+"",
+"Defining A Function:",
+"",
+"var f=(parameter1,parameter2)::{",
+"    return parameter1+parameter2;",
+"};",
+"",
+"Alternatively A function will return the expression on the last line if there is no semicolon, so f can be defined as:",
+"",
+"var f=(parameter1,parameter2)::{",
+"    parameter1+parameter2",
+"};",
+"",
+"Calling a function is very similar to JavaScript, however {SCOPE} has one more optional parameter",
+"A typical call:",
+"",
+"var q=f(x,1);",
+"",
+"Alternatively the function can be called with curly brackets in front of the parentheses, these signify which scope to run in.",
+"",
+"g{scope}()",
+"",
+"In the above example the scope keyword represents the current scope and if g defined a variable a, then it would exist in this scope even after the call to g ends."
+];
+var cursor={c:infoPadding.x+0,r:infoPadding.y+0};
+var wordLines=[];
+for(var k=0;k<text.length;k=k+1){
+var tLine=text[k];
+
+var words=[];
+var word="";
+var W=0;
+for(var i=0;i<tLine.length+1;i=i+1){
+  var addIt=i==tLine.length;
+  if(!addIt){
+    addIt=tLine[i]==" ";
+  }
+  if(addIt){
+    //if(word!==""){
+    words[W]=word+"";
+    W=W+1;
+      word="";
+  //  }
+  }else{
+  word=word+tLine[i];
+  }
+}
+wordLines[wordLines.length]=words;
+}
+for(var k=0;k<wordLines.length;k=k+1){
+    var words=wordLines[k];
+    for(var i=0;i<words.length;i=i+1){
+        var word=words[i];
+        //console.log(word.length);
+        while(((infoWidth-infoPadding.x)<cursor.c+word.length) && (cursor.r<pictureSize-infoPadding.y-1)){
+            cursor.c=infoPadding.x;
+            cursor.r=cursor.r+1;
+        }
+        if((cursor.r>pictureSize-infoPadding.y-1)){
+        break;
+        }
+
+        for(var j=0;j<word.length;j=j+1){
+
+        intro[cursor.r][cursor.c]=word[j];
+        cursor.c=cursor.c+1;
+        }
+        cursor.c=cursor.c+1;
+    }
+    cursor.r=cursor.r+1;
+    cursor.c=infoPadding.x;
+}
+var center={r:-0.5,i:0};
+var zoom=1.5;//1/0.010696;
+for(var yy=0;yy<pictureSize;yy=yy+1){
+var row="";
+  for(var xx=0;xx<(pictureSize/xScale);xx=xx+1){
+    var re=((4*xx/pictureSize)*xScale-2)/zoom+center.r;
+    var im=(4*yy/pictureSize-2)/zoom+center.i;
+    row=row+mandelbrot(re,im);
+  }
+  row=row+intro[yy];
+  console.log(row);
+};

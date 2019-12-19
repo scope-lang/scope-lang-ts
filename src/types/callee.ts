@@ -41,7 +41,7 @@ export class E_Call implements ScopeExpression {
   eval(this: E_Call, context: V_ValueHolder): ScopeValue {
     //console.log("CALL",this.target.eval(context));
     //console.log("PARMA",this.parameters);
-    return (this.target.eval(context).base() as ScopeCallee).eval(this.parameters, context);
+    return (this.target.eval(context).base() as ScopeCallee).eval(this.parameters, context).base();
   }
   target: ScopeExpression;
   parameters: Array<ScopeExpression>;

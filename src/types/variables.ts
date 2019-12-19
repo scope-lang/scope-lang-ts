@@ -1,6 +1,7 @@
 import { ScopeValue } from "./value";
 import { V_ValueHolder } from "./scopes";
 import { ScopeExpression } from "./expression";
+import { E_Literal } from "./literals";
 export enum VariableType {
   VAR,
   CONST,
@@ -43,16 +44,18 @@ export class E_MemberExpression implements ScopeExpression {
   start: Number;
   end: Number;
   eval(this: E_MemberExpression, context: V_ValueHolder): V_VariablePointer {
-    var p=(this.targetObj.eval(context).base() as V_ValueHolder).pointer(this.targetProp instanceof E_VariablePointer ? this.targetProp.targetPath[0] : this.targetProp.eval(context).toString());
+    var p=(this.targetObj.eval(context).base() as V_ValueHolder).pointer(this.targetProp instanceof E_VariablePointer && !this.computed ? this.targetProp.targetPath[0] : this.targetProp.eval(context).base().value+"");
     p.memberType="object";
     //console.log("M:",this,p);
     return p;
   }
   targetObj: ScopeExpression;
   targetProp: ScopeExpression;
-  constructor(targetObj: ScopeExpression, targetProp: ScopeExpression) {
+  computed:boolean;
+  constructor(targetObj: ScopeExpression, targetProp: ScopeExpression,computed?:boolean) {
     this.targetObj=targetObj;
     this.targetProp = targetProp;
+    this.computed=computed;
   }
 }
 

@@ -25,6 +25,39 @@ export class E_BinaryExpression implements ScopeExpression {
         }
       }
     }
+    if(this.operator=="&&"){
+      var l=this.left.eval(context).base();
+      var r=this.right.eval(context).base();
+      if(l instanceof V_Literal && r instanceof V_Literal){
+        try{
+          return new V_Literal(l.value&&r.value);
+        }catch(e){
+
+        }
+      }
+    }
+    if(this.operator=="||"){
+      var l=this.left.eval(context).base();
+      var r=this.right.eval(context).base();
+      if(l instanceof V_Literal && r instanceof V_Literal){
+        try{
+          return new V_Literal(l.value||r.value);
+        }catch(e){
+
+        }
+      }
+    }
+    if(this.operator=="=="){
+      var l=this.left.eval(context).base();
+      var r=this.right.eval(context).base();
+      if(l instanceof V_Literal && r instanceof V_Literal){
+        try{
+          return new V_Literal(l.value==r.value);
+        }catch(e){
+
+        }
+      }
+    }
     if(this.operator=="*"){
       var l=this.left.eval(context).base();
       var r=this.right.eval(context).base();

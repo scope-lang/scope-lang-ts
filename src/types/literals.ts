@@ -56,29 +56,75 @@ export class E_Number implements ScopeExpression{
     this.value=value;
   }
 }
-export class V_Literal implements ScopeValue {
+export class V_Literal implements ScopeValue,V_ValueHolder {
+  properties: { [key: string]: [VariableType, ScopeValue]; };
+  get(this: V_Literal, key: string): ScopeValue {
+    if(key=="length"){
+      return new V_Literal(this.value.length);
+    }
+    if(!isNaN(parseInt(key))){
+      return new V_Literal(this.value[parseInt(key)]);
+    }
+    return new V_Undefined();
+  }
+  pointer(this: V_ValueHolder, key: string): V_VariablePointer {
+    return new V_VariablePointer(this,[key]);
+  }
+  set(this: V_Literal, type: VariableType, key: string, value: ScopeValue): ScopeValue {
+    if(key=="length"){
+      return new V_Literal(this.value.length);
+      
+    }
+    if(!isNaN(parseInt(key))){
+      var nv=(this.value as String).split("");
+      nv[parseInt(key)]=(value.base() as V_Literal).value.toString()[0];
+      this.value=nv.join("");
+      return new V_Literal(nv[parseInt(key)]);
+    }
+    return new V_Undefined();
+  }
+  has(this: V_ValueHolder, key: string): boolean {
+    if(key=="length"){
+      return true;
+    }
+    if(!isNaN(parseInt(key))){
+      return true;
+    }
+    return false;
+  }
+  knows(this: V_ValueHolder, key: string): boolean {
+    console.log("GET K",key)
+    if(key=="length"){
+      return true;
+    }
+    if(!isNaN(parseInt(key))){
+      return true;
+    }
+   return false;
+  }
+  self: V_ValueHolder;
   base(this: ScopeValue): ScopeValue {
     return this;
   }
-  value: Number|string;
-  constructor(value:Number|string) {
+  value: Number|string|boolean;
+  constructor(value:Number|string|boolean) {
     this.value=value;
   }
   toString(this:V_Literal):string{
     return (this.value||"").toString();
   }
 }
-export class E_Literal implements ScopeExpression{
+export class E_Literal implements ScopeExpression,Sco{
   base(this: ScopeValue): ScopeValue {
     return this;
   }
   start: Number;
   end: Number;
-  value: Number|string;
+  value: Number|string|boolean;
   eval(this: E_Number, context: V_ValueHolder): ScopeValue {
     return new V_Literal(this.value);
   }
-  constructor(value:Number|string) {
+  constructor(value:Number|string|boolean) {
     this.value=value;
   }
 }
